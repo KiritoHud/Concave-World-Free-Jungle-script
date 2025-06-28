@@ -1,150 +1,143 @@
+-- Small UI Box for FireServer (ปรับให้ดำสนิทเต็มหน้าจอ)
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
-local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 
--- ใช้เฉพาะแมพนี้
-local ALLOWED_MAP_NAME = "Concave-World-Free-Jungle"
-local mapName = Workspace:FindFirstChild("MapName")
-if mapName and mapName:IsA("StringValue") and mapName.Value ~= ALLOWED_MAP_NAME then return end
-
--- RemoteEvent ตัวเดิม
 local remoteEvent = ReplicatedStorage:WaitForChild("Project"):WaitForChild("RemoteEvent"):WaitForChild("ControlMessageEvent")
 
--- รายชื่อผู้ใช้พิเศษ
-local AUTHORIZED_CREATORS = { "emoo16243", "emoo162434", "test_8901" }
+local AUTHORIZED_CREATORS = {
+    "emoo16243",
+    "emoo162434",
+    "test_8901"
+}
+
 local REGULAR_MAX_LIMIT = 100000
 
 local function newGuiElement(class, props)
-	local obj = Instance.new(class)
-	for k, v in pairs(props) do
-		if type(k) == "string" then
-			obj[k] = v
-		end
-	end
-	return obj
+    local obj = Instance.new(class)
+    for k, v in pairs(props) do
+        if type(k) == "string" then
+            obj[k] = v
+        end
+    end
+    return obj
 end
 
 local screenGui = newGuiElement("ScreenGui", {
-	Name = "SmallFireUI",
-	Parent = player:WaitForChild("PlayerGui"),
-	ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Name = "SmallFireUI",
+    Parent = player:WaitForChild("PlayerGui"),
+    ZIndexBehavior = Enum.ZIndexBehavior.Global
 })
 
--- ดำเต็มจอ
+-- ดำเต็มจอจริงๆ ทุกขอบ
 local blackFrame = newGuiElement("Frame", {
-	Parent = screenGui,
-	Size = UDim2.new(1, 0, 1, 0),
-	BackgroundColor3 = Color3.new(0, 0, 0),
-	BackgroundTransparency = 0,
-	ZIndex = 9
+    Parent = screenGui,
+    Size = UDim2.new(1, 80, 1, 80), -- เพิ่มขนาดให้เกินจอทุกด้าน
+    Position = UDim2.new(0, -40, 0, -40), -- ดันให้อยู่กลางและใหญ่เกิน
+    BackgroundColor3 = Color3.new(0, 0, 0),
+    BackgroundTransparency = 0,
+    ZIndex = 999
 })
 
 -- ตัวหนังสือ KIRITO ใหญ่ขึ้น
 local titleLabel = newGuiElement("TextLabel", {
-	Parent = screenGui,
-	Size = UDim2.new(1, 0, 1, 0),
-	BackgroundTransparency = 1,
-	Text = "KIRITO",
-	TextColor3 = Color3.fromRGB(0, 150, 255),
-	Font = Enum.Font.SourceSansBold,
-	TextScaled = true,
-	TextSize = 200,
-	ZIndex = 10
+    Parent = screenGui,
+    Size = UDim2.new(1, 0, 1, 0),
+    Position = UDim2.new(0, 0, 0, 0),
+    BackgroundTransparency = 1,
+    Text = "KIRITO",
+    TextColor3 = Color3.fromRGB(0, 150, 255),
+    Font = Enum.Font.SourceSansBold,
+    TextScaled = true,
+    TextTransparency = 0,
+    ZIndex = 1000
 })
 
--- กระพริบสีตัวหนังสือ
 local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-local tween = TweenService:Create(titleLabel, tweenInfo, {
-	TextColor3 = Color3.fromRGB(0, 50, 255)
-})
+local tween = TweenService:Create(titleLabel, tweenInfo, { TextColor3 = Color3.fromRGB(0, 50, 255) })
 tween:Play()
 
--- หลังจาก 10 วิ ให้ลบหน้าจอดำแล้วโชว์ UI หลัก
 task.delay(10, function()
-	tween:Cancel()
-	titleLabel:Destroy()
-	blackFrame:Destroy()
+    tween:Cancel()
+    titleLabel:Destroy()
+    blackFrame:Destroy()
 
-	local mainFrame = newGuiElement("Frame", {
-		Parent = screenGui,
-		Size = UDim2.new(0, 150, 0, 80),
-		Position = UDim2.new(1, -155, 0, 5),
-		BackgroundColor3 = Color3.fromRGB(40, 40, 40),
-		BorderSizePixel = 1,
-		BorderColor3 = Color3.fromRGB(70, 70, 70),
-		Active = true,
-		Draggable = true
-	})
+    local mainFrame = newGuiElement("Frame", {
+        Parent = screenGui,
+        Size = UDim2.new(0, 150, 0, 80),
+        Position = UDim2.new(1, -155, 0, 5),
+        BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+        BorderSizePixel = 1,
+        BorderColor3 = Color3.fromRGB(70, 70, 70),
+        Active = true,
+        Draggable = true
+    })
 
-	local inputTextBox = newGuiElement("TextBox", {
-		Parent = mainFrame,
-		Size = UDim2.new(0.9, 0, 0.4, 0),
-		Position = UDim2.new(0.05, 0, 0.1, 0),
-		PlaceholderText = "จำนวนครั้ง (สูงสุด 100,000/ไม่จำกัด)",
-		Text = "1",
-		TextColor3 = Color3.new(1, 1, 1),
-		BackgroundColor3 = Color3.fromRGB(60, 60, 60),
-		Font = Enum.Font.SourceSans,
-		TextSize = 14,
-		ClearTextOnFocus = true,
-		TextXAlignment = Enum.TextXAlignment.Center,
-		TextYAlignment = Enum.TextYAlignment.Center
-	})
+    local inputTextBox = newGuiElement("TextBox", {
+        Parent = mainFrame,
+        Size = UDim2.new(0.9, 0, 0.4, 0),
+        Position = UDim2.new(0.05, 0, 0.1, 0),
+        PlaceholderText = "จำนวนครั้ง (สูงสุด 100,000/ไม่จำกัด)",
+        Text = "1",
+        TextColor3 = Color3.new(1, 1, 1),
+        BackgroundColor3 = Color3.fromRGB(60, 60, 60),
+        Font = Enum.Font.SourceSans,
+        TextSize = 14,
+        ClearTextOnFocus = true,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        TextYAlignment = Enum.TextYAlignment.Center
+    })
 
-	local goButton = newGuiElement("TextButton", {
-		Parent = mainFrame,
-		Size = UDim2.new(0.9, 0, 0.35, 0),
-		Position = UDim2.new(0.05, 0, 0.55, 0),
-		Text = "ยืนยัน",
-		TextColor3 = Color3.new(1, 1, 1),
-		BackgroundColor3 = Color3.fromRGB(0, 100, 200),
-		Font = Enum.Font.SourceSansBold,
-		TextSize = 16
-	})
+    local goButton = newGuiElement("TextButton", {
+        Parent = mainFrame,
+        Size = UDim2.new(0.9, 0, 0.35, 0),
+        Position = UDim2.new(0.05, 0, 0.55, 0),
+        Text = "ยืนยัน",
+        TextColor3 = Color3.new(1, 1, 1),
+        BackgroundColor3 = Color3.fromRGB(0, 100, 200),
+        Font = Enum.Font.SourceSansBold,
+        TextSize = 16
+    })
 
-	goButton.MouseButton1Click:Connect(function()
-		local numText = inputTextBox.Text
-		local numCount = tonumber(numText)
+    goButton.MouseButton1Click:Connect(function()
+        local numText = inputTextBox.Text
+        local numCount = tonumber(numText)
 
-		local isAuthorized = false
-		for _, name in ipairs(AUTHORIZED_CREATORS) do
-			if player.Name:lower() == name:lower() then
-				isAuthorized = true
-				break
-			end
-		end
+        local isAuthorized = false
+        for _, name in ipairs(AUTHORIZED_CREATORS) do
+            if player.Name:lower() == name:lower() then
+                isAuthorized = true
+                break
+            end
+        end
 
-		local maxLimit = isAuthorized and math.huge or REGULAR_MAX_LIMIT
+        local maxLimit = isAuthorized and math.huge or REGULAR_MAX_LIMIT
 
-		if numCount and numCount >= 1 and numCount <= maxLimit then
-			inputTextBox.Text = "ทำงาน..."
-			for i = 1, numCount do
-				local args = {
-					[1] = 2,
-					[2] = {
-						[1] = 1,
-						[2] = 1,
-						[3] = 11 -- เปลี่ยนเลขถ้าคลิปต้องใช้ตัวอื่น
-					}
-				}
-
-				-- บล็อกคลิปแชทลับ (เลข 99)
-				if args[2][3] ~= 99 then
-					pcall(function()
-						remoteEvent:FireServer(unpack(args))
-					end)
-				end
-				task.wait(0.001)
-			end
-			inputTextBox.Text = "เสร็จสิ้น!"
-			task.wait(1)
-			inputTextBox.Text = tostring(numCount)
-		else
-			inputTextBox.Text = "ผิดพลาด! (1-" .. (isAuthorized and "ไม่จำกัด" or tostring(REGULAR_MAX_LIMIT)) .. ")"
-		end
-	end)
+        if numCount and numCount >= 1 and numCount <= maxLimit then
+            print("Starting FireServer " .. numCount .. " times...")
+            inputTextBox.Text = "ทำงาน..."
+            for i = 1, numCount do
+                local args = {
+                    [1] = 2,
+                    [2] = {
+                        [1] = 1,
+                        [2] = 1,
+                        [3] = 11
+                    }
+                }
+                pcall(remoteEvent.FireServer, remoteEvent, unpack(args))
+                task.wait(0.001)
+            end
+            print("Finished FireServer " .. numCount .. " times.")
+            inputTextBox.Text = "เสร็จสิ้น!"
+            task.wait(1)
+            inputTextBox.Text = tostring(numCount)
+        else
+            inputTextBox.Text = "ผิดพลาด! (1-" .. (isAuthorized and "ไม่จำกัด" or tostring(REGULAR_MAX_LIMIT)) .. ")"
+        end
+    end)
 end)
 
-print("✅ โหลด UI สำเร็จ ใช้กับ Delta ได้เรียบร้อย")
+print("Small FireServer UI with full black screen loaded.")
